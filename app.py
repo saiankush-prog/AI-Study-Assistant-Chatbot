@@ -10,8 +10,7 @@ from google import genai
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not API_KEY:
-    API_KEY = "YOUR_NEW_REVOKED_REPLACEMENT_KEY_HERE"
-
+    raise ValueError("GEMINI_API_KEY not found.")
 try:
     client = genai.Client(api_key=API_KEY)
 except Exception as e:
@@ -20,7 +19,7 @@ except Exception as e:
 def ask_gemini_stream(prompt):
     try:
         response = client.models.generate_content_stream(
-            model="gemini-1.5-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
         
@@ -62,77 +61,81 @@ def study_assistant(pdf_file, question):
 
     try:
         yield "🔄 Reading PDF file..."
+
         pdf_text = extract_text(pdf_file)
 
         if not pdf_text.strip() or pdf_text.startswith("Error reading PDF"):
-            yield "❌ Could not extract text from this PDF. It might be scanned or empty."
+            yield "❌ Could not extract text from this PDF. It may be empty or scanned."
             return
 
-        pdf_text = pdf_text[:150000] 
-        question_lower = question.lower()
+        # Limit text size
+        pdf_text = pdf_text[:150000]
 
-        if "summary" in question_lower:
-            task_prompt = f"Summarize this material:\n{pdf_text}"
-        elif "quiz" in question_lower:
-            task_prompt = f"Create a 5-question quiz with answers at the end:\n{pdf_text}"
-        else:
-            task_prompt = f"System: Answer using this material.\nMaterial:\n{pdf_text}\nQuestion: {question}"
-
-        yield "🧠 Gemini is thinking and writing..."
-        
-        for partial_response in ask_gemini_stream(task_prompt):
-            yield partial_response
-
-    except Exception as e:
-        yield f"❌ System Error: {e}"
+        question_lower = question.lower().strip()
 
         # --------------------------------
-        # SPECIAL TASK DETECTION
+        # TASK DETECTION
         # --------------------------------
+
         if "summary" in question_lower:
+
             task_prompt = f"""
             Summarize the following study material.
+
             Requirements:
-            - Use bullet points.
-            - Keep it concise.
-            - Highlight key concepts.
+            - Use bullet points
+            - Highlight key concepts
+            - Keep it concise
 
             Material:
             {pdf_text}
             """
+
         elif "quiz" in question_lower:
+
             task_prompt = f"""
-            Create a quiz from the study material.
+            Create a 5-question quiz from the study material.
+
             Requirements:
-            - 5 questions
+            - Number each question
             - Include answers at the end
 
             Material:
             {pdf_text}
             """
+
         elif "mcq" in question_lower:
+
             task_prompt = f"""
-            Generate 5 MCQs from the study material.
+            Generate 5 multiple-choice questions.
+
             Requirements:
-            - Four options each
-            - Mention correct answer
+            - Four options per question
+            - Clearly mark correct answer
 
             Material:
             {pdf_text}
             """
+
         elif "flashcard" in question_lower:
+
             task_prompt = f"""
-            Generate 10 flashcards from the material.
+            Generate 10 flashcards.
+
             Format:
+
             Q: Question
             A: Answer
 
             Material:
             {pdf_text}
             """
+
         elif "study plan" in question_lower:
+
             task_prompt = f"""
-            Create a 7-day study plan using the study material.
+            Create a 7-day study plan.
+
             Requirements:
             - Day-wise schedule
             - Revision day
@@ -141,9 +144,12 @@ def study_assistant(pdf_file, question):
             Material:
             {pdf_text}
             """
+
         else:
+
             task_prompt = f"""
             You are an expert AI Study Assistant.
+
             Study Material:
             {pdf_text}
 
@@ -151,16 +157,19 @@ def study_assistant(pdf_file, question):
             {question}
 
             Rules:
-            - Answer accurately using the provided material.
-            - Use simple language and clear examples when possible.
-            - Use bullet points when appropriate.
-            - If information is explicitly unavailable in the text, let the student know.
+            - Answer only using the provided material.
+            - Use simple explanations.
+            - Use bullet points when helpful.
+            - If information is not available, clearly say so.
             """
 
-        return ask_gemini(task_prompt)
+        yield "🧠 Gemini is generating your response..."
+
+        for partial_response in ask_gemini_stream(task_prompt):
+            yield partial_response
 
     except Exception as e:
-        return f"❌ System Error: {e}"
+        yield f"❌ System Error: {str(e)}"
 
 # =========================
 # GRADIO INTERFACE
