@@ -273,7 +273,7 @@ The chatbot processes the uploaded document and generates the requested output.
 ### Home Interface
 The main interface of the AI Study Assistant allows users to upload study materials and enter queries for AI-powered assistance.
 
-![Home Interface](home_interface-1.png)
+![Home Interface](screenshots/home_interface.png)
 ```
 
 ```
@@ -283,8 +283,8 @@ The main interface of the AI Study Assistant allows users to upload study materi
 ```
 The chatbot automatically generates concise summaries of uploaded study materials, highlighting key concepts and important points.
 
-![Summary Generation 1](summary_generation_1.png)
-![Summary Generation 2](summary_generation_2.png)
+![Summary Generation 1](screenshots/summary_generation_1.png)
+![Summary Generation 2](screenshots/summary_generation_2.png)
 ```
 
 ```
@@ -294,8 +294,8 @@ The chatbot automatically generates concise summaries of uploaded study material
 ```
 The chatbot can create practice quizzes from uploaded documents, helping students test their understanding of the material.
 
-![Quiz Generation 1](quiz_generation_1.png)
-![Quiz Generation 2](quiz_generation_2.png)
+![Quiz Generation 1](screenshots/quiz_generation_1.png)
+![Quiz Generation 2](screenshots/quiz_generation_2.png)
 ```
 
 ```
